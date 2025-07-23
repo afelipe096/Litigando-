@@ -82,6 +82,3 @@ La base de datos se crea automáticamente al ejecutar `scraper.py` o `database.p
 
 Todas las dependencias están listadas en `requirements.txt`.
 
-## Créditos
-
-Proyecto desarrollado para prácticas de RPA y web scraping en Python.
