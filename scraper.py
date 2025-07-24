@@ -1,84 +1,72 @@
-import requests  # Importa la librería requests para hacer peticiones HTTP
-import sqlite3   # Importa sqlite3 para manejar la base de datos SQLite
-from bs4 import BeautifulSoup  # Importa BeautifulSoup para parsear HTML
+import requests  # Se importa la librería requests para realizar solicitudes HTTP a páginas web.
+import sqlite3   # Se importa sqlite3 para gestionar la base de datos local SQLite.
+from bs4 import BeautifulSoup  # Se importa BeautifulSoup para analizar y extraer información de documentos HTML.
 
-# URL base del sitio web de donde se van a extraer las citas
+# Se define la URL base del sitio web del cual se extraerán las citas.
 URL = "https://quotes.toscrape.com/"
 
 def scrape_quote():
     """
-    Función para extraer todas las citas de la página web.
-    Retorna una lista de diccionarios, cada uno con el texto, autor y tags de una cita.
+    Esta función se encarga de recorrer todas las páginas del sitio web de citas,
+    extrayendo el texto, el autor y las etiquetas asociadas a cada cita.
+    Devuelve una lista de diccionarios, donde cada diccionario representa una cita.
     """
-    all_quotes = []  # Lista para almacenar todas las citas extraídas
-    page = 1  # Contador de página para la paginación
-    
-    # Ciclo para recorrer todas las páginas de citas
-    # Continúa hasta que no haya más citas en la página
+    all_quotes = []  # Aquí se almacenarán todas las citas recolectadas.
+    page = 1  # Se inicializa el contador de páginas para la navegación paginada.
+
     while True:
-        print(f"Scraping page {page}...")  # Imprime la página que se está extrayendo
+        print(f"Scraping page {page}...")  # Se indica en consola qué página se está procesando.
 
-        # Realiza la petición HTTP a la página correspondiente
-        response = requests.get(URL + f"page/{page}/")
-        # Parsea el contenido HTML de la respuesta
-        soup = BeautifulSoup(response.text, "html.parser")
+        response = requests.get(URL + f"page/{page}/")  # Se realiza la petición HTTP a la página correspondiente.
+        soup = BeautifulSoup(response.text, "html.parser")  # Se parsea el HTML recibido.
 
-        # Busca todos los divs con clase "quote" (cada cita)
-        quotes = soup.find_all("div", class_="quote")
+        quotes = soup.find_all("div", class_="quote")  # Se buscan todos los bloques de citas en la página.
         if not quotes:
-            # Si no encuentra más citas, termina el ciclo
-            break
-        
-        # Itera sobre cada cita encontrada en la página
-        # Extrae el texto, autor y tags de cada cita
-        # y los agrega a la lista all_quotes
-        for quote in quotes:
-            # Extrae el texto de la cita
-            text = quote.find("span", class_="text").get_text()
-            # Extrae el autor de la cita
-            author = quote.find("small", class_="author").get_text()
-            # Extrae los tags asociados a la cita
-            tags = [tag.get_text() for tag in quote.find_all("a", class_="tag")]
+            break  # Si no se encuentran más citas, se termina el ciclo.
 
-            # Agrega la cita a la lista de todas las citas
+        for quote in quotes:
+            text = quote.find("span", class_="text").get_text()  # Se extrae el texto de la cita.
+            author = quote.find("small", class_="author").get_text()  # Se extrae el nombre del autor.
+            tags = [tag.get_text() for tag in quote.find_all("a", class_="tag")]  # Se extraen todas las etiquetas asociadas.
+
             all_quotes.append({
                 "text": text,
                 "author": author,
                 "tags": tags
-            })
+            })  # Se agrega la cita extraída a la lista principal.
 
-        page += 1  # Pasa a la siguiente página
-    # Una vez que se han extraído todas las citas, retorna la lista
-    # de citas extraídas
-    return all_quotes  # Retorna la lista de todas las citas
+        page += 1  # Se avanza a la siguiente página.
+
+    return all_quotes  # Se retorna la lista completa de citas extraídas.
 
 
-# Punto de entrada principal para ejecutar el script
+# Punto de entrada principal del script.
 if __name__ == "__main__":
-    # Si el script se ejecuta directamente, comienza la extracción de citas
-    data = scrape_quote()
-    print(f"Se extrajeron {len(data)} citas")  # Imprime cuántas citas se extrajeron
+    data = scrape_quote()  # Se llama a la función para extraer las citas y se almacena el resultado.
+    print(f"Se extrajeron {len(data)} citas")  # Se muestra cuántas citas fueron extraídas.
 
-    # Conectar a la base de datos SQLite (crea el archivo si no existe)
+    # Se establece la conexión con la base de datos SQLite (se crea el archivo si no existe).
     conn = sqlite3.connect("quotes.db")
     cursor = conn.cursor()
 
-    # Crear la tabla 'quotes' si no existe, con columnas id, text y author
+    # Se crea la tabla 'quotes' si aún no existe, incluyendo una columna para almacenar las etiquetas como texto.
     cursor.execute('''
-        Función para extraer todas las citas de la página web.
-    Retorna una lista de diccionarios, cada uno con el texto, autor y etiquetas (tags) de una cita.
+        CREATE TABLE IF NOT EXISTS quotes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            text TEXT,
+            author TEXT,
+            tags TEXT
         )
     ''')
 
-    # Insertar cada cita extraída en la base de datos
+    # Se insertan todas las citas extraídas en la base de datos.
     for quote in data:
         cursor.execute(
-            "INSERT INTO quotes (text, author) VALUES (?, ?)",
-            (quote["text"], quote["author"])
+            "INSERT INTO quotes (text, author, tags) VALUES (?, ?, ?)",
+            (quote["text"], quote["author"], ", ".join(quote["tags"]))
         )
 
-    # Guardar los cambios realizados en la base de datos
+    # Se guardan los cambios realizados y se cierra la conexión con la base de datos.
     conn.commit()
-    # Cerrar la conexión con la base de datos
     conn.close()
-    print("Citas guardadas en la base de datos.")  # Mensaje final de confirmación
+    print("Citas guardadas en la base de datos.")

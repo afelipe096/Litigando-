@@ -1,50 +1,50 @@
-# Importa Flask para crear la API web y los módulos necesarios para manejar peticiones y respuestas
+# Se importa Flask para crear la API web, junto con los módulos necesarios para manejar peticiones y respuestas.
 from flask import Flask, request, jsonify
-# Importa joinedload para cargar relaciones de manera eficiente
+# Se importa joinedload para optimizar la carga de relaciones entre tablas al hacer consultas.
 from sqlalchemy.orm import joinedload
-# Importa los modelos y la sesión de la base de datos
+# Se importan los modelos y la clase de sesión desde el módulo de base de datos.
 from database import Quote, Tag, Session
 
-# Crea una instancia de la aplicación Flask
+# Se crea una instancia de la aplicación Flask.
 app = Flask(__name__)
 
-# Define una ruta para obtener citas (quotes) 
+# Se define una ruta para obtener citas (quotes) mediante el método GET.
 @app.route('/quotes', methods=['GET'])
 def get_quotes():
-    # Crea una nueva sesión de base de datos para esta petición
+    # Se crea una nueva sesión de base de datos para manejar la petición actual.
     session = Session()
-    # Prepara la consulta base, cargando también las etiquetas relacionadas
+    # Se prepara la consulta base, incluyendo la carga de las etiquetas asociadas a cada cita.
     query = session.query(Quote).options(joinedload(Quote.tags))
 
-    # Obtiene los parámetros de la URL para filtrar resultados
+    # Se obtienen los parámetros de la URL para permitir el filtrado de resultados.
     author = request.args.get("author")
     tag = request.args.get("tag")
     search = request.args.get("search")
 
-    # Si se proporciona un autor, filtra las citas por autor (búsqueda parcial, insensible a mayúsculas)
+    # Si se especifica un autor, se filtran las citas por autor (búsqueda parcial, sin distinguir mayúsculas).
     if author:
         query = query.filter(Quote.author.ilike(f"%{author}%"))
-    # Si se proporciona un texto de búsqueda, filtra las citas cuyo texto contenga ese valor
+    # Si se especifica un texto de búsqueda, se filtran las citas cuyo texto contenga ese valor.
     if search:
         query = query.filter(Quote.text.ilike(f"%{search}%"))
-    # Si se proporciona una etiqueta, filtra las citas que tengan esa etiqueta (búsqueda parcial)
+    # Si se especifica una etiqueta, se filtran las citas que tengan esa etiqueta (búsqueda parcial).
     if tag:
         query = query.join(Quote.tags).filter(Tag.name.ilike(f"%{tag}%"))
 
-    # Ejecuta la consulta y obtiene todas las citas que cumplen los filtros
+    # Se ejecuta la consulta y se obtienen todas las citas que cumplen con los filtros.
     quotes = query.all()
     result = []
-    # Construye la respuesta en formato JSON
+    # Se construye la respuesta en formato JSON, incluyendo texto, autor y etiquetas de cada cita.
     for quote in quotes:
         result.append({
-            "text": quote.text,  # Texto de la cita
-            "author": quote.author, # Autor de la cita
-            "tags": [t.name for t in quote.tags]  # Lista de nombres de etiquetas asociadas
+            "text": quote.text,  # Texto de la cita.
+            "author": quote.author, # Autor de la cita.
+            "tags": [t.name for t in quote.tags]  # Lista de nombres de etiquetas asociadas.
         })
 
-    # Devuelve la lista de citas como respuesta JSON
+    # Se devuelve la lista de citas como respuesta en formato JSON.
     return jsonify(result)
 
-# Punto de entrada principal para ejecutar la aplicación Flask en modo debug
+# Punto de entrada principal para ejecutar la aplicación Flask en modo debug.
 if __name__ == "__main__":
     app.run(debug=True)
