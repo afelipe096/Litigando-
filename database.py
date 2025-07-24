@@ -21,7 +21,7 @@ class Quote(Base):
     # Relación muchos a muchos con etiquetas, usando la tabla intermedia quote_tag
     tags = relationship('Tag', secondary=quote_tag, back_populates='quotes')
 
-# Modelo que representa una etiqueta (Tag)
+# Modelo que representa una etiqueta (Tag) 
 class Tag(Base):
     __tablename__ = 'tags'  # Nombre de la tabla en la base de datos
 

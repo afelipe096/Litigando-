@@ -12,7 +12,9 @@ def scrape_quote():
     """
     all_quotes = []  # Lista para almacenar todas las citas extraídas
     page = 1  # Contador de página para la paginación
-
+    
+    # Ciclo para recorrer todas las páginas de citas
+    # Continúa hasta que no haya más citas en la página
     while True:
         print(f"Scraping page {page}...")  # Imprime la página que se está extrayendo
 
@@ -26,8 +28,10 @@ def scrape_quote():
         if not quotes:
             # Si no encuentra más citas, termina el ciclo
             break
-
+        
         # Itera sobre cada cita encontrada en la página
+        # Extrae el texto, autor y tags de cada cita
+        # y los agrega a la lista all_quotes
         for quote in quotes:
             # Extrae el texto de la cita
             text = quote.find("span", class_="text").get_text()
@@ -44,9 +48,12 @@ def scrape_quote():
             })
 
         page += 1  # Pasa a la siguiente página
-
+    # Una vez que se han extraído todas las citas, retorna la lista
+    # de citas extraídas
     return all_quotes  # Retorna la lista de todas las citas
 
+
+# Punto de entrada principal para ejecutar el script
 if __name__ == "__main__":
     # Si el script se ejecuta directamente, comienza la extracción de citas
     data = scrape_quote()
@@ -58,7 +65,7 @@ if __name__ == "__main__":
 
     # Crear la tabla 'quotes' si no existe, con columnas id, text y author
     cursor.execute('''
-         Función para extraer todas las citas de la página web.
+        Función para extraer todas las citas de la página web.
     Retorna una lista de diccionarios, cada uno con el texto, autor y etiquetas (tags) de una cita.
         )
     ''')

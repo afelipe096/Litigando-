@@ -8,7 +8,7 @@ from database import Quote, Tag, Session
 # Crea una instancia de la aplicación Flask
 app = Flask(__name__)
 
-# Define una ruta para obtener citas (quotes) con filtros opcionales
+# Define una ruta para obtener citas (quotes) 
 @app.route('/quotes', methods=['GET'])
 def get_quotes():
     # Crea una nueva sesión de base de datos para esta petición
@@ -37,8 +37,8 @@ def get_quotes():
     # Construye la respuesta en formato JSON
     for quote in quotes:
         result.append({
-            "text": quote.text,  # Corrige el nombre del atributo (antes estaba mal escrito como 'trext')
-            "author": quote.author,
+            "text": quote.text,  # Texto de la cita
+            "author": quote.author, # Autor de la cita
             "tags": [t.name for t in quote.tags]  # Lista de nombres de etiquetas asociadas
         })
 
