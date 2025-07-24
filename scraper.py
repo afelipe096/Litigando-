@@ -58,10 +58,8 @@ if __name__ == "__main__":
 
     # Crear la tabla 'quotes' si no existe, con columnas id, text y author
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS quotes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            text TEXT,
-            author TEXT
+         Función para extraer todas las citas de la página web.
+    Retorna una lista de diccionarios, cada uno con el texto, autor y etiquetas (tags) de una cita.
         )
     ''')
 
